@@ -36,6 +36,14 @@ func StringToSize(s string, sz int) string {
 	return fmt.Sprintf("%s%s", s, strings.Repeat(" ", sz-len(s)))
 }
 
+// ValModeFunc type - function to modify the the value of the first input, given a
+// second input which is the size of the size of the key.
+type ValModFunc func(string, int) string
+
+// PrintLineFunc - given a key, a size integer, and a value, print the string as you see fit.
+type PrintLineFunc func(key string, sz int, val string)
+
+// ReplaceColon - a function of tpe ValModFunc
 func ReplaceColon(s string, sz int) string {
 	if len(s) > 0 && string(s[0]) == ":" {
 		s = s[1:]
@@ -45,18 +53,37 @@ func ReplaceColon(s string, sz int) string {
 
 }
 
+// PassThroughVMF - a ValModFunc which doesn't modify the input in any way.
+func PassThroughVMF(s string, sz int) string { return s }
+
+// FormatPrint - a function of type PrintLineFunc
+func FormatPrint(key string, sz int, val string) {
+
+	fmt.Println(StringToSize(key, sz), "= ", val)
+}
+
+func FormatPrintWithSep(key string, sz int, val string) {
+
+	fmt.Println(StringToSize(key, sz), "= ", val)
+	fmt.Println("")
+}
+
+// PrintEnv - used to print the environment
+func PrintEnv(searchterm string, valFunc ValModFunc, printLineFunc PrintLineFunc) {
+	envdict, sz := GetEnvDictMatch(searchterm)
+	for key, val := range envdict {
+		val = valFunc(val, sz+4)
+		printLineFunc(key, sz, val)
+	}
+}
+
 func main() {
 	args := os.Args
 	searchterm := ""
 	if len(args) >= 2 {
 		searchterm = args[1]
 	}
-	envdict, sz := GetEnvDictMatch(searchterm)
-	for key, val := range envdict {
-		//sz2 := sz - len(key)
 
-		val = ReplaceColon(val, sz+4)
-		fmt.Println(StringToSize(key, sz), "= ", val)
-		fmt.Println("")
-	}
+	PrintEnv(searchterm, ReplaceColon, FormatPrint)
+
 }
