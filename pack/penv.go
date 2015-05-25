@@ -6,19 +6,38 @@ import (
 	"strings"
 )
 
+const Usage string = `Print out the environment to std.out`
+
 // GetEnvDict - return a dictionary of environment variables and int representing the maximum length of the keys
-func GetEnvDict() (map[string]string, int) {
-	return GetEnvDictMatch("")
+func GetEnvDict(matchFunc MatchFunc) (map[string]string, int) {
+	return GetEnvDictMatch("", matchFunc)
 }
 
-func GetEnvDictMatch(searchterm string) (map[string]string, int) {
+type MatchFunc func(rhs, lhs string) bool
+
+func ExactMatch(rhs, lhs string) bool {
+	if rhs == lhs {
+		return true
+	}
+	return false
+}
+
+// does the lhs
+func ContainsMatch(rhs, lhs string) bool {
+	ct := strings.Contains(rhs, lhs)
+	return ct
+}
+
+func GetEnvDictMatch(searchterm string, matchFunc MatchFunc) (map[string]string, int) {
 	ret := map[string]string{}
 	maxlen := 0
 	for _, val := range os.Environ() {
 		pieces := strings.SplitN(val, "=", 2)
-		if searchterm != "" && !strings.Contains(strings.ToLower(pieces[0]), strings.ToLower(searchterm)) {
+
+		if searchterm != "" && !matchFunc(strings.ToLower(pieces[0]), strings.ToLower(searchterm)) {
 			continue
 		}
+
 		ret[pieces[0]] = pieces[1]
 		if len(pieces[0]) > maxlen {
 			maxlen = len(pieces[0])
@@ -69,8 +88,8 @@ func FormatPrintWithSep(key string, sz int, val string) {
 }
 
 // PrintEnv - used to print the environment
-func PrintEnv(searchterm string, valFunc ValModFunc, printLineFunc PrintLineFunc) {
-	envdict, sz := GetEnvDictMatch(searchterm)
+func PrintEnv(searchterm string, matchFunc MatchFunc, valFunc ValModFunc, printLineFunc PrintLineFunc) {
+	envdict, sz := GetEnvDictMatch(searchterm, matchFunc)
 	for key, val := range envdict {
 		val = valFunc(val, sz+4)
 		printLineFunc(key, sz, val)
