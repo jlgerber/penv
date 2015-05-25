@@ -1,4 +1,4 @@
-package main
+package penv
 
 import (
 	"fmt"
@@ -75,15 +75,4 @@ func PrintEnv(searchterm string, valFunc ValModFunc, printLineFunc PrintLineFunc
 		val = valFunc(val, sz+4)
 		printLineFunc(key, sz, val)
 	}
-}
-
-func main() {
-	args := os.Args
-	searchterm := ""
-	if len(args) >= 2 {
-		searchterm = args[1]
-	}
-
-	PrintEnv(searchterm, ReplaceColon, FormatPrint)
-
 }
