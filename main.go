@@ -10,7 +10,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "penv"
 	app.Usage = penv.Usage
-
+	app.Version = "1.0.0"
 	app.Flags = []cli.Flag{
 
 		cli.BoolFlag{
