@@ -3,6 +3,7 @@ package penv
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -87,11 +88,47 @@ func FormatPrintWithSep(key string, sz int, val string) {
 	fmt.Println("")
 }
 
+// StrPair is a pair of strings with a First and Second item.
+type StrPair struct {
+	First  string
+	Second string
+}
+
+type StrPairs []StrPair
+
+func (slice StrPairs) Len() int {
+	return len(slice)
+}
+
+func (slice StrPairs) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func (slice StrPairs) Less(i, j int) bool {
+	return slice[i].First < slice[j].First
+}
+
 // PrintEnv - used to print the environment
-func PrintEnv(searchterm string, matchFunc MatchFunc, valFunc ValModFunc, printLineFunc PrintLineFunc) {
+func PrintEnv(searchterm string, matchFunc MatchFunc, valFunc ValModFunc, printLineFunc PrintLineFunc, doSort bool) {
 	envdict, sz := GetEnvDictMatch(searchterm, matchFunc)
-	for key, val := range envdict {
-		val = valFunc(val, sz+4)
-		printLineFunc(key, sz, val)
+	var strpairs StrPairs
+	if doSort {
+		strpairs = make(StrPairs, len(envdict))
+		cnt := 0
+		for key, val := range envdict {
+			val = valFunc(val, sz+4)
+			strpairs[cnt] = StrPair{key, val}
+			cnt++
+		}
+		sort.Sort(strpairs)
+		for _, v := range strpairs {
+			printLineFunc(v.First, sz, v.Second)
+		}
+	} else {
+
+		for key, val := range envdict {
+			val = valFunc(val, sz+4)
+			printLineFunc(key, sz, val)
+		}
 	}
 }

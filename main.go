@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/codegangsta/cli"
 	"github.com/jlgerber/penv/pack"
-	"os"
 )
 
 func main() {
@@ -20,6 +21,10 @@ func main() {
 		cli.BoolFlag{
 			Name:  "exact, e",
 			Usage: "Perform an exact match when provided with a matching argument.",
+		},
+		cli.BoolFlag{
+			Name:  "sort, s",
+			Usage: "Sort the resulting keys. Note that the paths will NOT be sorted when using the --pretty flag; Only the environment variable names are sorted in the event that multiple variables match the provided inputs",
 		},
 	}
 
@@ -43,7 +48,7 @@ func main() {
 			matchfunc = penv.ExactMatch
 		}
 
-		penv.PrintEnv(searchterm, matchfunc, printfunc, formatfunc)
+		penv.PrintEnv(searchterm, matchfunc, printfunc, formatfunc, c.Bool("sort"))
 
 	}
 
